@@ -9,6 +9,7 @@ import fastdex.build.transform.FastdexTransform
 import fastdex.build.util.Constants
 import fastdex.build.util.FastdexInstantRun
 import fastdex.build.util.FastdexRuntimeException
+import fastdex.build.util.GradleUtils
 import fastdex.build.util.JumpException
 import fastdex.common.utils.SerializeUtils
 import fastdex.build.util.LibDependency
@@ -52,7 +53,9 @@ public class FastdexVariant {
 
         this.configuration = project.fastdex
         this.variantName = androidVariant.name.capitalize()
-        this.manifestPath = androidVariant.outputs.first().processManifest.manifestOutputFile
+
+        def processManifest = androidVariant.outputs.first().processManifest
+        this.manifestPath = GradleUtils.getAndroidGradlePluginVersion().compareTo("3.0") < 0 ? processManifest.manifestOutputFile : new File(processManifest.manifestOutputDirectory,"AndroidManifest.xml")
         this.rootBuildDir = FastdexUtils.getBuildDir(project)
         this.buildDir = FastdexUtils.getBuildDir(project,variantName)
 
@@ -77,7 +80,6 @@ public class FastdexVariant {
         project.logger.error("==fastdex hasDexCache: ${hasDexCache}")
         if (hasDexCache) {
             File diffResultSetFile = FastdexUtils.getDiffResultSetFile(project,variantName)
-            if (!FileUtils.isLegalFile(diffResultSetFile)) {
                 firstPatchBuild = true
             }
 
